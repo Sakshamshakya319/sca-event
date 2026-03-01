@@ -5,6 +5,13 @@ const authenticate = require("../middleware/authenticate");
 
 const router = express.Router();
 
+const withTimeout = (promise, ms = 3000, timeoutError = new Error("Firebase timeout")) => {
+  return Promise.race([
+    promise,
+    new Promise((_, reject) => setTimeout(() => reject(timeoutError), ms))
+  ]);
+};
+
 const demoUsers = [
   {
     id: "superadmin-1",
@@ -81,14 +88,14 @@ router.post("/login", async (req, res) => {
         memoryUsers.find(
           u =>
             String(u.identifier).trim().toLowerCase() ===
-              normalizedIdentifier && u.password === password
+            normalizedIdentifier && u.password === password
         ) || null;
     }
     if (!found && (roleKey === "faculty" || roleKey === "student")) {
       try {
         const db = getDb();
         const ref = db.ref(`users/${roleKey}`);
-        const snapshot = await ref.once("value");
+        const snapshot = await withTimeout(ref.once("value"));
         const data = snapshot.val() || {};
         const createdUsers = Object.entries(data).map(([id, value]) => ({
           id,
@@ -98,7 +105,7 @@ router.post("/login", async (req, res) => {
           createdUsers.find(
             u =>
               String(u.identifier).trim().toLowerCase() ===
-                normalizedIdentifier && u.password === password
+              normalizedIdentifier && u.password === password
           ) || null;
       } catch {
         found = null;
@@ -197,7 +204,7 @@ router.get("/users", authenticate, async (req, res) => {
   try {
     const db = getDb();
     const ref = db.ref(`users/${role}`);
-    const snapshot = await ref.once("value");
+    const snapshot = await withTimeout(ref.once("value"));
     const data = snapshot.val() || {};
     createdFromDb = Object.entries(data).map(([id, value]) => ({
       id,
@@ -241,7 +248,7 @@ router.post("/password", authenticate, async (req, res) => {
   try {
     const db = getDb();
     const ref = db.ref(`users/${role}`);
-    const snapshot = await ref.once("value");
+    const snapshot = await withTimeout(ref.once("value"));
     const data = snapshot.val() || {};
     const existingEntry = Object.entries(data).find(
       ([key]) => key === id
@@ -266,10 +273,10 @@ router.post("/password", authenticate, async (req, res) => {
     };
     try {
       const userRef = db.ref(`users/${role}/${id}`);
-      await userRef.update({
+      await withTimeout(userRef.update({
         password: newPassword,
         mustChangePassword: false
-      });
+      }));
     } catch {
     }
     if (!dynamicUsers[role]) {
@@ -316,7 +323,7 @@ router.post("/users", authenticate, async (req, res) => {
   try {
     const db = getDb();
     const ref = db.ref(`users/${role}`).push();
-    await ref.set(user);
+    await withTimeout(ref.set(user));
     id = ref.key;
   } catch {
     id = `mem-${Date.now()}`;
@@ -347,7 +354,7 @@ router.delete("/users/:role/:id", authenticate, async (req, res) => {
   try {
     const db = getDb();
     const ref = db.ref(`users/${role}/${id}`);
-    await ref.remove();
+    await withTimeout(ref.remove());
   } catch {
   }
   if (dynamicUsers[role] && dynamicUsers[role][id]) {
