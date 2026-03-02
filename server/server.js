@@ -28,28 +28,14 @@ app.use("/api/events", require("./routes/event.routes"));
 
 const port = process.env.PORT || 4000;
 
-const frontendDir = path.join(__dirname, "..", "frontend");
-const distDir = path.join(frontendDir, "dist");
-
-if (process.env.NODE_ENV === "production") {
-  app.use(express.static(distDir));
-  app.use((req, res, next) => {
-    if (req.path.startsWith("/api/")) {
-      return res.status(404).json({ message: "Not found" });
-    }
-    res.sendFile(path.join(distDir, "index.html"));
+app.use((req, res, next) => {
+  if (req.path.startsWith("/api/")) {
+    return res.status(404).json({ message: "Not found" });
+  }
+  res.json({
+    message: "SCA EMS API Server is running successfully."
   });
-} else {
-  app.use((req, res, next) => {
-    if (req.path.startsWith("/api/")) {
-      return res.status(404).json({ message: "Not found" });
-    }
-    res.json({
-      message:
-        "Frontend is served separately by the Vite dev server (http://localhost:5173)"
-    });
-  });
-}
+});
 
 connectDB()
   .then(() => {
