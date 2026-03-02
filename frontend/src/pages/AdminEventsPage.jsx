@@ -295,11 +295,48 @@ function AdminEventsPage() {
                                       </span>
                                     )}
                                   </div>
-                                  {todo.important && (
-                                    <span className="font-mono text-[9px] uppercase tracking-[0.18em] text-red-600">
-                                      Important
-                                    </span>
-                                  )}
+                                  <div className="flex items-center gap-2">
+                                    {todo.important && (
+                                      <span className="font-mono text-[9px] uppercase tracking-[0.18em] text-red-600">
+                                        Important
+                                      </span>
+                                    )}
+                                    <button
+                                      type="button"
+                                      onClick={async () => {
+                                        if (!confirm("Are you sure you want to delete this task?")) return;
+                                        const token = localStorage.getItem("scaAuthToken");
+                                        if (!token) return;
+                                        try {
+                                          const res = await fetch(
+                                            `/api/events/${selected.id}/todos/${todoId}`,
+                                            {
+                                              method: "DELETE",
+                                              headers: {
+                                                Authorization: "Bearer " + token
+                                              }
+                                            }
+                                          );
+                                          if (!res.ok) {
+                                            alert("Failed to delete task");
+                                            return;
+                                          }
+                                          const updated = await res.json();
+                                          setEvents((prev) =>
+                                            prev.map((e) =>
+                                              e.id === updated.id ? updated : e
+                                            )
+                                          );
+                                          setSelected(updated);
+                                        } catch {
+                                          alert("Unable to delete task");
+                                        }
+                                      }}
+                                      className="rounded bg-red-600 px-2 py-1 text-[10px] font-mono uppercase tracking-[0.18em] text-white hover:bg-red-700"
+                                    >
+                                      Delete
+                                    </button>
+                                  </div>
                                 </div>
                               )
                             )

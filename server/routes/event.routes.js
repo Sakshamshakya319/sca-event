@@ -393,6 +393,41 @@ router.patch("/:id/todos/:todoId", async (req, res) => {
   }
 });
 
+router.delete("/:id/todos/:todoId", async (req, res) => {
+  const { id, todoId } = req.params;
+  if (
+    req.user.role !== "admin" &&
+    req.user.role !== "superadmin" &&
+    req.user.role !== "faculty"
+  ) {
+    return res.status(403).json({ message: "Forbidden: Only admin and faculty can delete todos" });
+  }
+  try {
+    const db = getDb();
+    const eventRef = db.ref(`events/${id}`);
+    const eventSnap = await withTimeout(eventRef.once("value"));
+    const eventData = eventSnap.val();
+    if (!eventData) {
+      return res.status(404).json({ message: "Event not found" });
+    }
+    const todoRef = db.ref(`events/${id}/todos/${todoId}`);
+    const snapshot = await withTimeout(todoRef.once("value"));
+    if (!snapshot.val()) {
+      return res.status(404).json({ message: "Task not found" });
+    }
+    await withTimeout(todoRef.remove());
+    const updatedEventSnap = await withTimeout(eventRef.once("value"));
+    const value = updatedEventSnap.val();
+    return res.json({
+      id,
+      ...value
+    });
+  } catch (err) {
+    console.error("Firebase error deleting todo:", err.message || err);
+    return res.status(500).json({ message: "Failed to delete task: " + (err.message || "Unknown error") });
+  }
+});
+
 router.patch("/:id/status", async (req, res) => {
   const { id } = req.params;
   if (req.user.role !== "admin" && req.user.role !== "superadmin") {

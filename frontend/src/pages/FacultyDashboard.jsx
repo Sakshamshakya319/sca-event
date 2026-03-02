@@ -991,43 +991,45 @@ function FacultyDashboard() {
                         {selectedEvent.todos
                           ? Object.entries(selectedEvent.todos).map(
                             ([todoId, todo]) => (
-                              <button
+                              <div
                                 key={todoId}
-                                type="button"
-                                onClick={async () => {
-                                  const token =
-                                    localStorage.getItem("scaAuthToken");
-                                  if (!token) return;
-                                  try {
-                                    const res = await fetch(
-                                      `/api/events/${selectedEvent.id}/todos/${todoId}`,
-                                      {
-                                        method: "PATCH",
-                                        headers: {
-                                          "Content-Type": "application/json",
-                                          Authorization: "Bearer " + token
-                                        },
-                                        body: JSON.stringify({
-                                          completed: !todo.completed
-                                        })
-                                      }
-                                    );
-                                    if (!res.ok) return;
-                                    const updated = await res.json();
-                                    setEvents((prev) =>
-                                      prev.map((e) =>
-                                        e.id === updated.id ? updated : e
-                                      )
-                                    );
-                                  } catch {
-                                  }
-                                }}
-                                className={`flex w-full items-center justify-between rounded border px-3 py-2 text-left text-[11px] ${todo.completed
+                                className={`flex w-full items-center justify-between rounded border px-3 py-2 text-[11px] ${todo.completed
                                   ? "border-green bg-green/5 line-through text-text-muted"
                                   : "border-border-color bg-background"
                                   }`}
                               >
-                                <div className="flex items-center gap-2">
+                                <button
+                                  type="button"
+                                  onClick={async () => {
+                                    const token =
+                                      localStorage.getItem("scaAuthToken");
+                                    if (!token) return;
+                                    try {
+                                      const res = await fetch(
+                                        `/api/events/${selectedEvent.id}/todos/${todoId}`,
+                                        {
+                                          method: "PATCH",
+                                          headers: {
+                                            "Content-Type": "application/json",
+                                            Authorization: "Bearer " + token
+                                          },
+                                          body: JSON.stringify({
+                                            completed: !todo.completed
+                                          })
+                                        }
+                                      );
+                                      if (!res.ok) return;
+                                      const updated = await res.json();
+                                      setEvents((prev) =>
+                                        prev.map((e) =>
+                                          e.id === updated.id ? updated : e
+                                        )
+                                      );
+                                    } catch {
+                                    }
+                                  }}
+                                  className="flex flex-1 items-center gap-2 text-left"
+                                >
                                   <span>{todo.title}</span>
                                   {todo.audience === "students" && (
                                     <span className="rounded bg-green/10 px-2 py-[1px] text-[9px] font-mono uppercase tracking-[0.18em] text-green-700">
@@ -1044,13 +1046,49 @@ function FacultyDashboard() {
                                       All
                                     </span>
                                   )}
+                                </button>
+                                <div className="flex items-center gap-2">
+                                  {todo.important && (
+                                    <span className="font-mono text-[9px] uppercase tracking-[0.18em] text-red-600">
+                                      Important
+                                    </span>
+                                  )}
+                                  <button
+                                    type="button"
+                                    onClick={async () => {
+                                      if (!confirm("Are you sure you want to delete this task?")) return;
+                                      const token = localStorage.getItem("scaAuthToken");
+                                      if (!token) return;
+                                      try {
+                                        const res = await fetch(
+                                          `/api/events/${selectedEvent.id}/todos/${todoId}`,
+                                          {
+                                            method: "DELETE",
+                                            headers: {
+                                              Authorization: "Bearer " + token
+                                            }
+                                          }
+                                        );
+                                        if (!res.ok) {
+                                          alert("Failed to delete task");
+                                          return;
+                                        }
+                                        const updated = await res.json();
+                                        setEvents((prev) =>
+                                          prev.map((e) =>
+                                            e.id === updated.id ? updated : e
+                                          )
+                                        );
+                                      } catch {
+                                        alert("Unable to delete task");
+                                      }
+                                    }}
+                                    className="rounded bg-red-600 px-2 py-1 text-[10px] font-mono uppercase tracking-[0.18em] text-white hover:bg-red-700"
+                                  >
+                                    Delete
+                                  </button>
                                 </div>
-                                {todo.important && (
-                                  <span className="font-mono text-[9px] uppercase tracking-[0.18em] text-red-600">
-                                    Important
-                                  </span>
-                                )}
-                              </button>
+                              </div>
                             )
                           )
                           : (
