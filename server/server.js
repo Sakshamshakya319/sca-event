@@ -30,10 +30,19 @@ const port = process.env.PORT || 4000;
 
 app.use((req, res, next) => {
   if (req.path.startsWith("/api/")) {
-    return res.status(404).json({ message: "Not found" });
+    return res.status(404).json({ message: "API route not found" });
   }
   res.json({
     message: "SCA EMS API Server is running successfully."
+  });
+});
+
+// Production Global Error Handler
+app.use((err, req, res, next) => {
+  console.error("GLOBAL_ERROR:", err.stack);
+  res.status(500).json({
+    message: "A server error occurred. Please try again later.",
+    error: process.env.NODE_ENV === "development" ? err.message : undefined
   });
 });
 

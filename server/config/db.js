@@ -26,14 +26,32 @@ async function connectDB() {
   // 1. Remove any surrounding quotes (single or double)
   formattedPrivateKey = formattedPrivateKey.trim().replace(/^["']|["']$/g, "");
 
-  // 2. Handle both literal newlines and escaped \n characters
+  // 2. Handle escaped newlines (\n as a string)
   if (formattedPrivateKey.includes("\\n")) {
     formattedPrivateKey = formattedPrivateKey.split("\\n").join("\n");
   }
 
-  // 3. If it's still all on one line and missing \n, it might be corrupted
+  // 3. Fix "Mangled Key" issue: If it's all on one line with spaces instead of newlines
+  // This happens when pasting from a JSON file into some dashboards
   if (!formattedPrivateKey.includes("\n") && formattedPrivateKey.includes(" ")) {
-    console.warn("Firebase Private Key looks like it might be space-separated instead of newline-separated.");
+    // If it starts with the header but has no newlines, it's definitely mangled
+    const header = "-----BEGIN PRIVATE KEY-----";
+    const footer = "-----END PRIVATE KEY-----";
+    if (formattedPrivateKey.startsWith(header) && formattedPrivateKey.includes(footer)) {
+      let body = formattedPrivateKey
+        .replace(header, "")
+        .replace(footer, "")
+        .trim();
+      // Replace all spaces in the body with nothing (it's base64)
+      body = body.split(" ").join("");
+      // Reconstruct with proper newlines (64 chars per line is standard but not strictly required)
+      formattedPrivateKey = `${header}\n${body}\n${footer}`;
+    }
+  }
+
+  // 4. Final verification: ensure it has at least the header and footer
+  if (!formattedPrivateKey.includes("-----BEGIN PRIVATE KEY-----")) {
+    console.error("CRITICAL: FIREBASE_PRIVATE_KEY is missing the 'BEGIN' header.");
   }
 
   const credentialConfig = {
