@@ -47,30 +47,49 @@ function StudentDashboard() {
     if (!events.length || !studentIdentifier) return [];
     const result = [];
     events.forEach((event) => {
-      if (!event.students || !event.todos) return;
+      // Check if student is assigned to this event
+      if (!event.students) return;
       const assignedEntries = Object.values(event.students || {}).filter(
         (s) =>
           String(s.identifier || "").trim().toLowerCase() ===
           studentIdentifier
       );
       if (!assignedEntries.length) return;
-      Object.entries(event.todos || {}).forEach(([todoId, todo]) => {
-        const audience = todo.audience || "students";
-        if (audience === "faculty") {
-          return;
-        }
-        result.push({
-          _id: `${event.id}::${todoId}`,
-          eventId: event.id,
-          todoId,
-          title: todo.title,
-          eventName: event.title,
-          completed: !!todo.completed,
-          dueDate: event.date || null,
-          priority: todo.important ? "high" : "medium",
-          assignedTo: identifier
+      
+      // If event has todos, add them as tasks
+      if (event.todos) {
+        Object.entries(event.todos).forEach(([todoId, todo]) => {
+          const audience = todo.audience || "students";
+          if (audience === "faculty") {
+            return;
+          }
+          result.push({
+            _id: `${event.id}::${todoId}`,
+            eventId: event.id,
+            todoId,
+            title: todo.title,
+            eventName: event.title,
+            completed: !!todo.completed,
+            dueDate: event.date || null,
+            priority: todo.important ? "high" : "medium",
+            assignedTo: identifier
+          });
         });
-      });
+      } else {
+        // If no todos yet, create a placeholder task to show the event
+        result.push({
+          _id: `${event.id}::placeholder`,
+          eventId: event.id,
+          todoId: null,
+          title: "Event assigned - waiting for tasks",
+          eventName: event.title,
+          completed: false,
+          dueDate: event.date || null,
+          priority: event.important ? "high" : "medium",
+          assignedTo: identifier,
+          isPlaceholder: true
+        });
+      }
     });
     return result;
   })();
@@ -198,6 +217,9 @@ function StudentDashboard() {
   });
 
   const toggleTask = async (eventId, todoId, currentCompleted) => {
+    // Don't allow toggling placeholder tasks
+    if (!todoId) return;
+    
     const token = localStorage.getItem("scaAuthToken");
     try {
       const res = await fetch(`/api/events/${eventId}/todos/${todoId}`, {
@@ -581,37 +603,44 @@ function StudentDashboard() {
               filteredTasks.map((t) => {
                 const dueInfo = computeDueInfo(t);
                 const canToggle =
-                  !t.assignedTo || t.assignedTo === currentIdentifier;
+                  !t.isPlaceholder && (!t.assignedTo || t.assignedTo === currentIdentifier);
                 return (
                   <div
                     key={t._id}
-                    className="sd-fade flex items-center gap-4 px-4 py-3"
+                    className={`sd-fade flex items-center gap-4 px-4 py-3 ${
+                      t.isPlaceholder ? "bg-blue-50/30" : ""
+                    }`}
                   >
                     <button
                       type="button"
                       onClick={() => {
-                        if (canToggle) {
+                        if (canToggle && !t.isPlaceholder) {
                           toggleTask(t.eventId, t.todoId, !!t.completed);
                         }
                       }}
-                      disabled={!canToggle}
+                      disabled={!canToggle || t.isPlaceholder}
                       className={`flex h-5 w-5 items-center justify-center rounded border-2 ${
-                        t.completed
+                        t.isPlaceholder
+                          ? "border-blue-300 bg-blue-100 opacity-50"
+                          : t.completed
                           ? "border-green bg-green"
                           : canToggle
                           ? "border-border-color hover:border-green"
                           : "border-border-color opacity-40"
                       }`}
                     >
-                      {t.completed && (
+                      {t.completed && !t.isPlaceholder && (
                         <span className="text-[11px] text-white">✓</span>
+                      )}
+                      {t.isPlaceholder && (
+                        <span className="text-[11px] text-blue-500">⏳</span>
                       )}
                     </button>
                     <div className="flex-1">
                       <div
                         className={`text-sm font-medium ${
                           t.completed ? "line-through text-text-muted" : ""
-                        }`}
+                        } ${t.isPlaceholder ? "italic text-blue-700" : ""}`}
                       >
                         {t.title}
                       </div>
@@ -626,12 +655,17 @@ function StudentDashboard() {
                             {dueInfo.text}
                           </span>
                         )}
-                        {t.assignedTo && (
+                        {t.isPlaceholder && (
+                          <span className="font-mono text-blue-600">
+                            Faculty will add tasks soon
+                          </span>
+                        )}
+                        {t.assignedTo && !t.isPlaceholder && (
                           <span className="font-mono">
                             Assigned to: {t.assignedTo}
                           </span>
                         )}
-                        {!canToggle && (
+                        {!canToggle && !t.isPlaceholder && (
                           <span className="font-mono text-red-600">
                             Not assigned to you
                           </span>
@@ -640,7 +674,9 @@ function StudentDashboard() {
                     </div>
                     <span
                       className={`rounded px-2 py-1 text-[10px] font-mono uppercase ${
-                        t.priority === "high"
+                        t.isPlaceholder
+                          ? "bg-blue-100 text-blue-700"
+                          : t.priority === "high"
                           ? "bg-red-100 text-red-700"
                           : t.priority === "low"
                           ? "bg-green-100 text-green-700"

@@ -984,7 +984,7 @@ function FacultyDashboard() {
                           </label>
                           <button
                             type="submit"
-                            className="rounded bg-blue px-3 py-2 text-[11px] font-semibold uppercase tracking-[0.18em] text-white"
+                            className="rounded bg-primary px-3 py-2 text-[11px] font-semibold uppercase tracking-[0.18em] text-white hover:bg-primary/90"
                           >
                             Add
                           </button>
@@ -1174,7 +1174,7 @@ function FacultyDashboard() {
                           />
                           <button
                             type="submit"
-                            className="rounded bg-primary px-3 py-2 text-[11px] font-semibold uppercase tracking-[0.18em] text-white"
+                            className="rounded bg-primary px-3 py-2 text-[11px] font-semibold uppercase tracking-[0.18em] text-white hover:bg-primary/90"
                           >
                             Assign
                           </button>
