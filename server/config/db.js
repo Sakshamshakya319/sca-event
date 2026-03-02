@@ -40,6 +40,7 @@ async function connectDB() {
   }
 
   try {
+    console.log("🕐 Server time:", new Date().toISOString());
     if (admin.apps.length === 0) {
       admin.initializeApp({
         credential: admin.credential.cert({
