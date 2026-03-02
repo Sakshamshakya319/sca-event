@@ -22,15 +22,19 @@ async function connectDB() {
   }
 
   let formattedPrivateKey = privateKey;
-  // Handle quotes if they exist
-  if (formattedPrivateKey.startsWith('"') && formattedPrivateKey.endsWith('"')) {
-    formattedPrivateKey = formattedPrivateKey.slice(1, -1);
-  } else if (formattedPrivateKey.startsWith("'") && formattedPrivateKey.endsWith("'")) {
-    formattedPrivateKey = formattedPrivateKey.slice(1, -1);
-  }
   
-  // Handle escaped newlines (\n as a string)
-  formattedPrivateKey = formattedPrivateKey.split("\\n").join("\n");
+  // 1. Remove any surrounding quotes (single or double)
+  formattedPrivateKey = formattedPrivateKey.trim().replace(/^["']|["']$/g, "");
+
+  // 2. Handle both literal newlines and escaped \n characters
+  if (formattedPrivateKey.includes("\\n")) {
+    formattedPrivateKey = formattedPrivateKey.split("\\n").join("\n");
+  }
+
+  // 3. If it's still all on one line and missing \n, it might be corrupted
+  if (!formattedPrivateKey.includes("\n") && formattedPrivateKey.includes(" ")) {
+    console.warn("Firebase Private Key looks like it might be space-separated instead of newline-separated.");
+  }
 
   const credentialConfig = {
     projectId,

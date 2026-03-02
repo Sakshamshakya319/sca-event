@@ -109,13 +109,14 @@ router.post("/", async (req, res) => {
       createdRole: req.user.role,
       createdAt: now
     };
-    await ref.set(event);
+    await withTimeout(ref.set(event));
     return res.status(201).json({
       id: ref.key,
       ...event
     });
-  } catch {
-    return res.status(500).json({ message: "Failed to create event" });
+  } catch (err) {
+    console.error("Firebase error creating event:", err.message || err);
+    return res.status(500).json({ message: "Failed to create event: " + (err.message || "Unknown error") });
   }
 });
 
@@ -150,7 +151,7 @@ router.put("/:id", async (req, res) => {
   try {
     const db = getDb();
     const ref = db.ref(`events/${id}`);
-    const snapshot = await ref.once("value");
+    const snapshot = await withTimeout(ref.once("value"));
     if (!snapshot.val()) {
       return res.status(404).json({ message: "Event not found" });
     }
@@ -186,16 +187,16 @@ router.put("/:id", async (req, res) => {
       }
     }
 
-    await ref.update(updates);
+    await withTimeout(ref.update(updates));
 
-    const updatedSnap = await ref.once("value");
+    const updatedSnap = await withTimeout(ref.once("value"));
     return res.json({
       id,
       ...updatedSnap.val()
     });
   } catch (error) {
-    console.error(error);
-    return res.status(500).json({ message: "Failed to update event" });
+    console.error("Firebase error updating event:", error.message || error);
+    return res.status(500).json({ message: "Failed to update event: " + (error.message || "Unknown error") });
   }
 });
 
@@ -208,16 +209,16 @@ router.delete("/:id", async (req, res) => {
   try {
     const db = getDb();
     const ref = db.ref(`events/${id}`);
-    const snapshot = await ref.once("value");
+    const snapshot = await withTimeout(ref.once("value"));
     if (!snapshot.val()) {
       return res.status(404).json({ message: "Event not found" });
     }
 
-    await ref.remove();
+    await withTimeout(ref.remove());
     return res.status(204).send();
   } catch (error) {
-    console.error(error);
-    return res.status(500).json({ message: "Failed to delete event" });
+    console.error("Firebase error deleting event:", error.message || error);
+    return res.status(500).json({ message: "Failed to delete event: " + (error.message || "Unknown error") });
   }
 });
 
@@ -237,7 +238,7 @@ router.post("/:id/todos", async (req, res) => {
   try {
     const db = getDb();
     const eventRef = db.ref(`events/${id}`);
-    const snapshot = await eventRef.once("value");
+    const snapshot = await withTimeout(eventRef.once("value"));
     if (!snapshot.val()) {
       return res.status(404).json({ message: "Event not found" });
     }
@@ -253,15 +254,16 @@ router.post("/:id/todos", async (req, res) => {
       completed: false,
       createdAt: Date.now()
     };
-    await todoRef.set(todo);
-    const updatedSnap = await eventRef.once("value");
+    await withTimeout(todoRef.set(todo));
+    const updatedSnap = await withTimeout(eventRef.once("value"));
     const value = updatedSnap.val();
     return res.status(201).json({
       id,
       ...value
     });
-  } catch {
-    return res.status(500).json({ message: "Failed to add task" });
+  } catch (err) {
+    console.error("Firebase error adding task:", err.message || err);
+    return res.status(500).json({ message: "Failed to add task: " + (err.message || "Unknown error") });
   }
 });
 
@@ -292,12 +294,13 @@ router.post("/:id/students", async (req, res) => {
       assignedRole: req.user.role,
       assignedAt: Date.now()
     };
-    await studentsRef.set(student);
-    const updatedSnap = await eventRef.once("value");
+    await withTimeout(studentsRef.set(student));
+    const updatedSnap = await withTimeout(eventRef.once("value"));
     const value = updatedSnap.val() || {};
     return res.status(201).json({ id, ...value });
-  } catch {
-    return res.status(500).json({ message: "Failed to assign student" });
+  } catch (err) {
+    console.error("Firebase error assigning student:", err.message || err);
+    return res.status(500).json({ message: "Failed to assign student: " + (err.message || "Unknown error") });
   }
 });
 
@@ -314,12 +317,13 @@ router.delete("/:id/students/:studentId", async (req, res) => {
     const db = getDb();
     const eventRef = db.ref(`events/${id}`);
     const studentRef = eventRef.child(`students/${studentId}`);
-    await studentRef.remove();
-    const updatedSnap = await eventRef.once("value");
+    await withTimeout(studentRef.remove());
+    const updatedSnap = await withTimeout(eventRef.once("value"));
     const value = updatedSnap.val() || {};
     return res.json({ id, ...value });
-  } catch {
-    return res.status(500).json({ message: "Failed to remove student" });
+  } catch (err) {
+    console.error("Firebase error removing student:", err.message || err);
+    return res.status(500).json({ message: "Failed to remove student: " + (err.message || "Unknown error") });
   }
 });
 
@@ -398,22 +402,23 @@ router.patch("/:id/status", async (req, res) => {
   try {
     const db = getDb();
     const ref = db.ref(`events/${id}`);
-    const snapshot = await ref.once("value");
+    const snapshot = await withTimeout(ref.once("value"));
     if (!snapshot.val()) {
       return res.status(404).json({ message: "Event not found" });
     }
-    await ref.update({
+    await withTimeout(ref.update({
       status,
       statusUpdatedAt: Date.now()
-    });
-    const updated = await ref.once("value");
+    }));
+    const updated = await withTimeout(ref.once("value"));
     const value = updated.val();
     return res.json({
       id,
       ...value
     });
-  } catch {
-    return res.status(500).json({ message: "Failed to update status" });
+  } catch (err) {
+    console.error("Firebase error updating status:", err.message || err);
+    return res.status(500).json({ message: "Failed to update status: " + (err.message || "Unknown error") });
   }
 });
 
