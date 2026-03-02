@@ -115,6 +115,7 @@ function StudentDashboard() {
         return;
       }
       try {
+        console.log("[DEBUG] Fetching events for student:", identifier);
         const res = await fetch("/api/events", {
           headers: { Authorization: "Bearer " + token }
         });
@@ -129,18 +130,21 @@ function StudentDashboard() {
         }
         if (res.ok) {
           const data = await res.json();
+          console.log("[DEBUG] Received events:", data);
           setEvents(Array.isArray(data) ? data : []);
         } else {
+          console.error("[DEBUG] Failed to fetch events:", res.status);
           setEvents([]);
         }
-      } catch {
+      } catch (err) {
+        console.error("[DEBUG] Error fetching events:", err);
         setEvents([]);
       } finally {
         setLoading(false);
       }
     };
     load();
-  }, [navigate]);
+  }, [navigate, identifier]);
 
   useEffect(() => {
     const token = localStorage.getItem("scaAuthToken");

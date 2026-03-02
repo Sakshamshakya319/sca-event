@@ -45,6 +45,10 @@ router.get("/", async (req, res) => {
               .toLowerCase() === idNorm
         );
       });
+      console.log(`[DEBUG] Student ${idNorm} has ${filtered.length} assigned events`);
+      filtered.forEach(e => {
+        console.log(`[DEBUG] Event: ${e.title}, Students:`, Object.values(e.students || {}).map(s => s.identifier));
+      });
     }
     filtered.sort((a, b) => {
       const ad = a.date || "";
