@@ -23,35 +23,29 @@ async function connectDB() {
 
   let formattedPrivateKey = privateKey;
   
-  // 1. Remove any surrounding quotes (single or double)
+  // 1. Remove surrounding quotes and whitespace
   formattedPrivateKey = formattedPrivateKey.trim().replace(/^["']|["']$/g, "");
 
-  // 2. Handle escaped newlines (\n as a string)
+  // 2. Fix Render's common mangling (replacing \n with spaces or literal \\n)
   if (formattedPrivateKey.includes("\\n")) {
     formattedPrivateKey = formattedPrivateKey.split("\\n").join("\n");
   }
 
-  // 3. Fix "Mangled Key" issue: If it's all on one line with spaces instead of newlines
-  // This happens when pasting from a JSON file into some dashboards
-  if (!formattedPrivateKey.includes("\n") && formattedPrivateKey.includes(" ")) {
-    // If it starts with the header but has no newlines, it's definitely mangled
-    const header = "-----BEGIN PRIVATE KEY-----";
-    const footer = "-----END PRIVATE KEY-----";
-    if (formattedPrivateKey.startsWith(header) && formattedPrivateKey.includes(footer)) {
-      let body = formattedPrivateKey
-        .replace(header, "")
-        .replace(footer, "")
-        .trim();
-      // Replace all spaces in the body with nothing (it's base64)
-      body = body.split(" ").join("");
-      // Reconstruct with proper newlines (64 chars per line is standard but not strictly required)
-      formattedPrivateKey = `${header}\n${body}\n${footer}`;
-    }
-  }
-
-  // 4. Final verification: ensure it has at least the header and footer
-  if (!formattedPrivateKey.includes("-----BEGIN PRIVATE KEY-----")) {
-    console.error("CRITICAL: FIREBASE_PRIVATE_KEY is missing the 'BEGIN' header.");
+  // 3. Surgical Reconstruction:
+  // If the key is one long line (no actual newlines), Google will reject it.
+  // We extract the base64 body, clean it, and re-insert proper newlines.
+  const header = "-----BEGIN PRIVATE KEY-----";
+  const footer = "-----END PRIVATE KEY-----";
+  
+  if (formattedPrivateKey.includes(header) && formattedPrivateKey.includes(footer)) {
+    let body = formattedPrivateKey
+      .replace(header, "")
+      .replace(footer, "")
+      .replace(/\s/g, ""); // Remove ALL spaces, tabs, and newlines from the body
+    
+    // Google expects the key body to be clean Base64. 
+    // We wrap it properly with the header/footer and real newlines.
+    formattedPrivateKey = `${header}\n${body}\n${footer}`;
   }
 
   const credentialConfig = {
@@ -61,14 +55,19 @@ async function connectDB() {
   };
 
   try {
-    admin.initializeApp({
-      credential: admin.credential.cert(credentialConfig),
-      databaseURL: databaseURL
-    });
-    console.log("Firebase initialized successfully for project:", projectId);
+    // Only initialize if no apps exist to avoid "already exists" errors during hot-reloads
+    if (admin.apps.length === 0) {
+      admin.initializeApp({
+        credential: admin.credential.cert(credentialConfig),
+        databaseURL: databaseURL
+      });
+      console.log("✅ Firebase initialized successfully");
+    }
     appInitialized = true;
   } catch (err) {
-    console.error("Firebase initialization failed:", err.message);
+    console.error("❌ Firebase Auth Failed:", err.message);
+    // Log the key length to help the user verify they didn't copy a partial key
+    console.log(`Diagnostic: Key Length = ${privateKey.length} chars`);
     throw err;
   }
 }
