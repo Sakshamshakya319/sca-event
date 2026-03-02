@@ -26,6 +26,24 @@ function AuthPortal() {
   const [passwordChangeError, setPasswordChangeError] = useState("");
   const [redirectRole, setRedirectRole] = useState(null);
   const [showPassword, setShowPassword] = useState(false);
+  const [showNewPassword, setShowNewPassword] = useState(false);
+
+  const getPasswordStrength = (pwd) => {
+    if (!pwd) return { score: 0, label: "", color: "" };
+    let score = 0;
+    if (pwd.length >= 8) score++;
+    if (/[A-Z]/.test(pwd)) score++;
+    if (/[a-z]/.test(pwd)) score++;
+    if (/[0-9]/.test(pwd)) score++;
+    if (/[^A-Za-z0-9]/.test(pwd)) score++;
+    if (pwd.length >= 12) score++;
+
+    if (score <= 2) return { score, label: "Weak", color: "bg-red-500" };
+    if (score <= 4) return { score, label: "Good", color: "bg-yellow-500" };
+    return { score, label: "Strong", color: "bg-green-500" };
+  };
+
+  const passwordStrength = getPasswordStrength(newPassword);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -209,9 +227,18 @@ function AuthPortal() {
           <div className="w-full max-w-md rounded border border-border-color bg-white p-6 shadow-xl">
             <h3 className="font-sans font-bold text-lg">Set your own password</h3>
             <p className="mt-1 text-xs text-text-muted">
-              This account was created by admin. For security and transparency,
-              please change the provided password to your own secret password.
+              This account was created by admin. For security, please change the
+              provided password to your own secure password.
             </p>
+            <div className="mt-3 rounded bg-blue-50 border border-blue-200 px-3 py-2">
+              <p className="text-xs font-semibold text-blue-900">Password Requirements:</p>
+              <ul className="mt-1 space-y-0.5 text-xs text-blue-800">
+                <li>• At least 8 characters long</li>
+                <li>• Contains uppercase letter (A-Z)</li>
+                <li>• Contains lowercase letter (a-z)</li>
+                <li>• Contains number (0-9)</li>
+              </ul>
+            </div>
             <form
               className="mt-4 space-y-3"
               onSubmit={async (e) => {
@@ -219,6 +246,19 @@ function AuthPortal() {
                 setPasswordChangeError("");
                 if (!newPassword || !confirmNewPassword) {
                   setPasswordChangeError("Enter and confirm your new password");
+                  return;
+                }
+                if (newPassword.length < 8) {
+                  setPasswordChangeError("Password must be at least 8 characters long");
+                  return;
+                }
+                const hasUpperCase = /[A-Z]/.test(newPassword);
+                const hasLowerCase = /[a-z]/.test(newPassword);
+                const hasNumber = /[0-9]/.test(newPassword);
+                if (!hasUpperCase || !hasLowerCase || !hasNumber) {
+                  setPasswordChangeError(
+                    "Password must contain uppercase, lowercase, and number"
+                  );
                   return;
                 }
                 if (newPassword !== confirmNewPassword) {
@@ -281,13 +321,37 @@ function AuthPortal() {
                 <label className="block text-xs font-semibold text-text-muted">
                   New password
                 </label>
-                <input
-                  type="password"
-                  value={newPassword}
-                  onChange={(e) => setNewPassword(e.target.value)}
-                  className="mt-1 w-full rounded border border-border-color px-3 py-2 text-sm"
-                  placeholder="Enter a strong password"
-                />
+                <div className="relative">
+                  <input
+                    type={showNewPassword ? "text" : "password"}
+                    value={newPassword}
+                    onChange={(e) => setNewPassword(e.target.value)}
+                    className="mt-1 w-full rounded border border-border-color px-3 py-2 pr-12 text-sm"
+                    placeholder="Enter a strong password"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowNewPassword((prev) => !prev)}
+                    className="absolute inset-y-0 right-3 flex items-center text-[10px] font-mono uppercase tracking-[0.18em] text-text-muted"
+                  >
+                    {showNewPassword ? "Hide" : "Show"}
+                  </button>
+                </div>
+                {newPassword && (
+                  <div className="mt-2">
+                    <div className="flex items-center gap-2">
+                      <div className="h-1.5 flex-1 rounded-full bg-gray-200">
+                        <div
+                          className={`h-full rounded-full transition-all ${passwordStrength.color}`}
+                          style={{ width: `${(passwordStrength.score / 6) * 100}%` }}
+                        />
+                      </div>
+                      <span className="text-xs font-semibold text-text-muted">
+                        {passwordStrength.label}
+                      </span>
+                    </div>
+                  </div>
+                )}
               </div>
               <div>
                 <label className="block text-xs font-semibold text-text-muted">
@@ -315,9 +379,15 @@ function AuthPortal() {
                     setNewPassword("");
                     setConfirmNewPassword("");
                     setCurrentPasswordForChange("");
+                    localStorage.removeItem("scaAuthToken");
+                    localStorage.removeItem("scaUserRole");
+                    localStorage.removeItem("scaUserName");
+                    localStorage.removeItem("scaUserIdentifier");
+                    localStorage.removeItem("scaUserMustChangePassword");
+                    navigate("/auth");
                   }}
                 >
-                  Later
+                  Logout
                 </button>
                 <button
                   type="submit"

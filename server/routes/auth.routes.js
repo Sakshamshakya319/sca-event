@@ -239,10 +239,18 @@ router.post("/password", authenticate, async (req, res) => {
   if (!currentPassword || !newPassword) {
     return res.status(400).json({ message: "Both current and new password are required" });
   }
-  if (newPassword.length < 6) {
+  if (newPassword.length < 8) {
     return res
       .status(400)
-      .json({ message: "New password should be at least 6 characters long" });
+      .json({ message: "New password must be at least 8 characters long" });
+  }
+  const hasUpperCase = /[A-Z]/.test(newPassword);
+  const hasLowerCase = /[a-z]/.test(newPassword);
+  const hasNumber = /[0-9]/.test(newPassword);
+  if (!hasUpperCase || !hasLowerCase || !hasNumber) {
+    return res
+      .status(400)
+      .json({ message: "Password must contain uppercase, lowercase, and number" });
   }
   if (!["faculty", "student", "admin"].includes(role)) {
     return res.status(400).json({ message: "Password change is not supported for this role" });
