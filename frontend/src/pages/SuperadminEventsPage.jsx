@@ -601,11 +601,6 @@ function SuperadminEventsPage() {
                             </div>
                           )
                         )
-                                </span>
-                              )}
-                            </button>
-                          )
-                        )
                       : (
                         <div className="text-[11px] text-text-muted">
                           No tasks added yet.
