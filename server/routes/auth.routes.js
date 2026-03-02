@@ -107,7 +107,8 @@ router.post("/login", async (req, res) => {
               String(u.identifier).trim().toLowerCase() ===
               normalizedIdentifier && u.password === password
           ) || null;
-      } catch {
+      } catch (err) {
+        console.error(`Firebase error for role ${roleKey}:`, err.message || err);
         found = null;
       }
     }

@@ -44,7 +44,15 @@ function AuthPortal() {
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify(body)
         });
-        const data = await res.json().catch(() => ({}));
+        const contentType = res.headers.get("content-type");
+        let data = {};
+        if (contentType && contentType.includes("application/json")) {
+          data = await res.json().catch(() => ({}));
+        } else {
+          const text = await res.text().catch(() => "");
+          console.error("Non-JSON response from server:", text);
+          throw new Error("Server returned an invalid response. Check backend logs.");
+        }
         if (res.ok) {
           return data;
         }
