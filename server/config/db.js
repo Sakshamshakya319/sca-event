@@ -23,51 +23,50 @@ async function connectDB() {
 
   let formattedPrivateKey = privateKey;
   
-  // 1. Remove surrounding quotes and whitespace
+  // 1. Remove any surrounding quotes and whitespace
   formattedPrivateKey = formattedPrivateKey.trim().replace(/^["']|["']$/g, "");
 
-  // 2. Fix Render's common mangling (replacing \n with spaces or literal \\n)
-  if (formattedPrivateKey.includes("\\n")) {
-    formattedPrivateKey = formattedPrivateKey.split("\\n").join("\n");
-  }
+  // 2. Handle literal \n strings (common in Render/Heroku)
+  formattedPrivateKey = formattedPrivateKey.replace(/\\n/g, "\n");
 
-  // 3. Surgical Reconstruction:
-  // If the key is one long line (no actual newlines), Google will reject it.
-  // We extract the base64 body, clean it, and re-insert proper newlines.
+  // 3. Perfect PEM Reconstruction
+  // This ensures the key has the exact headers, footers, and 64-character line wrapping
   const header = "-----BEGIN PRIVATE KEY-----";
   const footer = "-----END PRIVATE KEY-----";
-  
+
   if (formattedPrivateKey.includes(header) && formattedPrivateKey.includes(footer)) {
-    let body = formattedPrivateKey
-      .replace(header, "")
-      .replace(footer, "")
-      .replace(/\s/g, ""); // Remove ALL spaces, tabs, and newlines from the body
-    
-    // Google expects the key body to be clean Base64. 
-    // We wrap it properly with the header/footer and real newlines.
-    formattedPrivateKey = `${header}\n${body}\n${footer}`;
+    // Extract only the Base64 content between the headers
+    let base64Body = formattedPrivateKey
+      .split(header)[1]
+      .split(footer)[0]
+      .replace(/\s+/g, ""); // Remove ALL spaces, tabs, and newlines
+
+    // Rebuild the key with standard 64-character line breaks
+    let wrappedBody = "";
+    for (let i = 0; i < base64Body.length; i += 64) {
+      wrappedBody += base64Body.substring(i, i + 64) + "\n";
+    }
+
+    formattedPrivateKey = `${header}\n${wrappedBody}${footer}\n`;
   }
 
   const credentialConfig = {
-    projectId,
-    clientEmail,
+    projectId: projectId.trim(),
+    clientEmail: clientEmail.trim(),
     privateKey: formattedPrivateKey
   };
 
   try {
-    // Only initialize if no apps exist to avoid "already exists" errors during hot-reloads
     if (admin.apps.length === 0) {
       admin.initializeApp({
         credential: admin.credential.cert(credentialConfig),
-        databaseURL: databaseURL
+        databaseURL: databaseURL.trim().replace(/\/$/, "") // Remove trailing slash
       });
-      console.log("✅ Firebase initialized successfully");
+      console.log("✅ Firebase Admin SDK initialized successfully");
     }
     appInitialized = true;
   } catch (err) {
-    console.error("❌ Firebase Auth Failed:", err.message);
-    // Log the key length to help the user verify they didn't copy a partial key
-    console.log(`Diagnostic: Key Length = ${privateKey.length} chars`);
+    console.error("❌ Firebase Initialization Error:", err.message);
     throw err;
   }
 }
