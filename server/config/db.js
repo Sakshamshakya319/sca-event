@@ -15,10 +15,18 @@ async function connectDB() {
     throw new Error("Missing Firebase environment variables");
   }
 
+  let formattedPrivateKey = privateKey;
+  if (formattedPrivateKey.startsWith('"') && formattedPrivateKey.endsWith('"')) {
+    formattedPrivateKey = formattedPrivateKey.slice(1, -1);
+  } else if (formattedPrivateKey.startsWith("'") && formattedPrivateKey.endsWith("'")) {
+    formattedPrivateKey = formattedPrivateKey.slice(1, -1);
+  }
+  formattedPrivateKey = formattedPrivateKey.replace(/\\n/g, "\n");
+
   const credentialConfig = {
     projectId,
     clientEmail,
-    privateKey: privateKey.replace(/\\n/g, "\n")
+    privateKey: formattedPrivateKey
   };
 
   admin.initializeApp({
