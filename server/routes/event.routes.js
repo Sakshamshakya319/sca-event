@@ -4,13 +4,20 @@ const authenticate = require("../middleware/authenticate");
 
 const router = express.Router();
 
+const withTimeout = (promise, ms = 5000, timeoutError = new Error("Firebase timeout")) => {
+  return Promise.race([
+    promise,
+    new Promise((_, reject) => setTimeout(() => reject(timeoutError), ms))
+  ]);
+};
+
 router.use(authenticate);
 
 router.get("/", async (req, res) => {
   try {
     const db = getDb();
     const ref = db.ref("events");
-    const snapshot = await ref.once("value");
+    const snapshot = await withTimeout(ref.once("value"));
     const data = snapshot.val() || {};
     const items = Object.entries(data).map(([id, value]) => ({
       id,
@@ -47,8 +54,9 @@ router.get("/", async (req, res) => {
       return 0;
     });
     return res.json(filtered);
-  } catch {
-    return res.status(500).json({ message: "Failed to load events" });
+  } catch (err) {
+    console.error("Firebase error loading events:", err.message || err);
+    return res.status(500).json({ message: "Failed to load events: " + (err.message || "Unknown error") });
   }
 });
 

@@ -4,13 +4,20 @@ const authenticate = require("../middleware/authenticate");
 
 const router = express.Router();
 
+const withTimeout = (promise, ms = 5000, timeoutError = new Error("Firebase timeout")) => {
+  return Promise.race([
+    promise,
+    new Promise((_, reject) => setTimeout(() => reject(timeoutError), ms))
+  ]);
+};
+
 router.use(authenticate);
 
 router.get("/", async (req, res) => {
   try {
     const db = getDb();
     const ref = db.ref(`profiles/${req.user.id}`);
-    const snapshot = await ref.once("value");
+    const snapshot = await withTimeout(ref.once("value"));
     const data = snapshot.val() || null;
     return res.json(
       data || {
@@ -28,7 +35,8 @@ router.get("/", async (req, res) => {
       }
     );
   } catch (err) {
-    return res.status(500).json({ message: "Failed to load profile" });
+    console.error("Firebase error loading profile:", err.message || err);
+    return res.status(500).json({ message: "Failed to load profile: " + (err.message || "Unknown error") });
   }
 });
 
@@ -63,11 +71,12 @@ router.put("/", async (req, res) => {
 
     const db = getDb();
     const ref = db.ref(`profiles/${req.user.id}`);
-    await ref.set(profile);
+    await withTimeout(ref.set(profile));
 
     return res.json(profile);
   } catch (err) {
-    return res.status(500).json({ message: "Failed to update profile" });
+    console.error("Firebase error updating profile:", err.message || err);
+    return res.status(500).json({ message: "Failed to update profile: " + (err.message || "Unknown error") });
   }
 });
 

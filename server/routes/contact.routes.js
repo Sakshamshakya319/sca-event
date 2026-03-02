@@ -5,6 +5,13 @@ const authenticate = require("../middleware/authenticate");
 
 const router = express.Router();
 
+const withTimeout = (promise, ms = 5000, timeoutError = new Error("Firebase timeout")) => {
+  return Promise.race([
+    promise,
+    new Promise((_, reject) => setTimeout(() => reject(timeoutError), ms))
+  ]);
+};
+
 router.post("/", async (req, res) => {
   try {
     const { name, email, subject, message, category, universityId, role } =
@@ -52,11 +59,12 @@ router.post("/", async (req, res) => {
       userIdentifier: userMeta ? userMeta.identifier : null
     };
 
-    await ref.set(payload);
+    await withTimeout(ref.set(payload));
 
     return res.status(201).json({ id: ref.key });
   } catch (err) {
-    return res.status(500).json({ message: "Failed to submit contact query" });
+    console.error("Firebase error submitting contact query:", err.message || err);
+    return res.status(500).json({ message: "Failed to submit contact query: " + (err.message || "Unknown error") });
   }
 });
 
@@ -67,7 +75,7 @@ router.get("/", authenticate, async (req, res) => {
     }
     const db = getDb();
     const ref = db.ref("contactMessages");
-    const snapshot = await ref.once("value");
+    const snapshot = await withTimeout(ref.once("value"));
     const data = snapshot.val() || {};
     const items = Object.entries(data).map(([id, value]) => ({
       id,
@@ -76,7 +84,8 @@ router.get("/", authenticate, async (req, res) => {
     items.sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0));
     return res.json(items);
   } catch (err) {
-    return res.status(500).json({ message: "Failed to load contact queries" });
+    console.error("Firebase error loading contact queries:", err.message || err);
+    return res.status(500).json({ message: "Failed to load contact queries: " + (err.message || "Unknown error") });
   }
 });
 

@@ -215,7 +215,8 @@ router.get("/users", authenticate, async (req, res) => {
       password: value.password || "",
       mustChangePassword: !!value.mustChangePassword
     }));
-  } catch {
+  } catch (err) {
+    console.error(`Firebase error loading ${role} users:`, err.message || err);
     createdFromDb = [];
   }
   const createdFromMemory = Object.entries(dynamicUsers[role] || {}).map(

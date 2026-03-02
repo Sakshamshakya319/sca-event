@@ -12,16 +12,25 @@ async function connectDB() {
   const databaseURL = process.env.FIREBASE_DB_URL;
 
   if (!projectId || !clientEmail || !privateKey || !databaseURL) {
+    console.error("Missing Firebase environment variables:", {
+      projectId: !!projectId,
+      clientEmail: !!clientEmail,
+      privateKey: !!privateKey,
+      databaseURL: !!databaseURL
+    });
     throw new Error("Missing Firebase environment variables");
   }
 
   let formattedPrivateKey = privateKey;
+  // Handle quotes if they exist
   if (formattedPrivateKey.startsWith('"') && formattedPrivateKey.endsWith('"')) {
     formattedPrivateKey = formattedPrivateKey.slice(1, -1);
   } else if (formattedPrivateKey.startsWith("'") && formattedPrivateKey.endsWith("'")) {
     formattedPrivateKey = formattedPrivateKey.slice(1, -1);
   }
-  formattedPrivateKey = formattedPrivateKey.replace(/\\n/g, "\n");
+  
+  // Handle escaped newlines (\n as a string)
+  formattedPrivateKey = formattedPrivateKey.split("\\n").join("\n");
 
   const credentialConfig = {
     projectId,
@@ -29,12 +38,17 @@ async function connectDB() {
     privateKey: formattedPrivateKey
   };
 
-  admin.initializeApp({
-    credential: admin.credential.cert(credentialConfig),
-    databaseURL: databaseURL
-  });
-
-  appInitialized = true;
+  try {
+    admin.initializeApp({
+      credential: admin.credential.cert(credentialConfig),
+      databaseURL: databaseURL
+    });
+    console.log("Firebase initialized successfully for project:", projectId);
+    appInitialized = true;
+  } catch (err) {
+    console.error("Firebase initialization failed:", err.message);
+    throw err;
+  }
 }
 
 function getDb() {
