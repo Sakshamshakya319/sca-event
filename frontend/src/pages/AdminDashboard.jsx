@@ -316,8 +316,6 @@ function AdminDashboard() {
   useEffect(() => {
     if (!events.length) return;
     if (typeof window === "undefined") return;
-    const flagKey = "scaUpcomingShown_admin";
-    if (sessionStorage.getItem(flagKey)) return;
     const today = new Date();
     const todayStart = new Date(
       today.getFullYear(),
@@ -344,7 +342,6 @@ function AdminDashboard() {
     if (upcoming.length) {
       setEventNotifications(upcoming);
       setShowNotifications(true);
-      sessionStorage.setItem(flagKey, "1");
     }
   }, [events]);
 

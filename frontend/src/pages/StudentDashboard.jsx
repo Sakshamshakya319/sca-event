@@ -175,8 +175,6 @@ function StudentDashboard() {
   useEffect(() => {
     if (loading) return;
     if (typeof window === "undefined") return;
-    const flagKey = "scaUpcomingShown_student";
-    if (sessionStorage.getItem(flagKey)) return;
     const today = new Date();
     const todayStart = new Date(
       today.getFullYear(),
@@ -203,7 +201,6 @@ function StudentDashboard() {
     if (upcoming.length) {
       setUpcomingTasks(upcoming);
       setShowUpcomingModal(true);
-      sessionStorage.setItem(flagKey, "1");
     }
   }, [loading, derivedTasks]);
 

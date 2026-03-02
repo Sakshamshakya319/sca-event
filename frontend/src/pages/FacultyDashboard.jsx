@@ -83,8 +83,6 @@ function FacultyDashboard() {
     const role = localStorage.getItem("scaUserRole");
     if (!token || role !== "faculty") return;
     if (typeof window === "undefined") return;
-    const flagKey = "scaUpcomingShown_faculty";
-    if (sessionStorage.getItem(flagKey)) return;
     fetch("/api/events", {
       headers: {
         Authorization: "Bearer " + token
@@ -119,7 +117,6 @@ function FacultyDashboard() {
         if (upcoming.length) {
           setEventNotifications(upcoming);
           setShowNotifications(true);
-          sessionStorage.setItem(flagKey, "1");
         }
       })
       .catch(() => { });
