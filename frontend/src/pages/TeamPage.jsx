@@ -6,49 +6,31 @@ import logo from "../../logo.png";
 
 const leadershipTeam = [
   {
-    name: "Dr. A. Das",
-    role: "Dean of Student Affairs",
+    name: "Dr. Anand Kumar Shukla",
+    role: "Head of School of Computer Applications",
     focus: "Strategic Oversight & Approvals",
     email: "dean.sca@lpu.co.in"
   },
-  {
-    name: "Dr. M. Singh",
-    role: "Head of Technical Events",
-    focus: "Hackathons & Seminars Mentorship",
-    email: "technical.head@lpu.co.in"
-  },
-  {
-    name: "Prof. P. Sharma",
-    role: "Cultural Events Mentor",
-    focus: "Music Festival & Cultural Nights",
-    email: "cultural@lpu.co.in"
-  }
+  // {
+  //   name: "Dr. M. Singh",
+  //   role: "Head of Technical Events",
+  //   focus: "Hackathons & Seminars Mentorship",
+  //   email: "technical.head@lpu.co.in"
+  // },
+  // {
+  //   name: "Prof. P. Sharma",
+  //   role: "Cultural Events Mentor",
+  //   focus: "Music Festival & Cultural Nights",
+  //   email: "cultural@lpu.co.in"
+  // }
 ];
 
 const coreTeam = [
   {
-    name: "Rahul Verma",
-    role: "Student President",
-    focus: "Overall Execution & Logistics",
-    email: "12201234@lpu.in"
-  },
-  {
-    name: "Simran Kaur",
+    name: "Saksham Shakya",
     role: "Tech Lead",
     focus: "EMS Platform Development & Maintenance",
-    email: "12204567@lpu.in"
-  },
-  {
-    name: "Aryan Gupta",
-    role: "Operations Head",
-    focus: "Venue & Budget Coordination",
-    email: "12208901@lpu.in"
-  },
-  {
-    name: "Priya Patel",
-    role: "Design & Outreach",
-    focus: "Marketing & Public Relations",
-    email: "12203344@lpu.in"
+    email: "saksham.shakya2025@lpu.in"
   }
 ];
 
