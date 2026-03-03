@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import gsap from "gsap";
 import anime from "animejs";
@@ -10,6 +10,7 @@ function Landing() {
   const cursorRef = useRef(null);
   const ringRef = useRef(null);
   const heroRef = useRef(null);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   useEffect(() => {
     const cursor = cursorRef.current;
@@ -74,50 +75,123 @@ function Landing() {
         className="cursor-ring fixed z-[9998] h-9 w-9 -translate-x-1/2 -translate-y-1/2 rounded-full border border-ink/60"
       />
 
-      <nav className="fixed inset-x-0 top-0 z-50 flex h-16 items-center justify-between border-b border-black/60 bg-text-main/95 px-10 backdrop-blur">
-        <Link to="/" className="flex items-center gap-2">
-          <img
-            src={logo}
-            alt="SCA EMS"
-            className="h-8 w-auto"
-          />
-        </Link>
-        <div className="flex items-center gap-8 text-xs font-semibold uppercase tracking-[0.22em] text-white/85">
-          <Link to="/" className="hidden md:inline">
-            Home
+      <nav className="fixed inset-x-0 top-0 z-50 border-b border-black/60 bg-text-main/95 backdrop-blur">
+        <div className="flex h-16 items-center justify-between px-4 sm:px-6 md:px-10">
+          <Link to="/" className="flex items-center gap-2">
+            <img
+              src={logo}
+              alt="SCA EMS"
+              className="h-8 w-auto"
+            />
           </Link>
-          <Link to="/about" className="hidden md:inline">
-            About
-          </Link>
-          <Link to="/team" className="hidden md:inline">
-            Team
-          </Link>
-          <Link to="/contact" className="hidden md:inline">
-            Contact
-          </Link>
-          {dashboardRoute ? (
-            <Link
-              to={dashboardRoute}
-              className="rounded border border-white/40 px-4 py-2 text-[11px] font-semibold tracking-[0.18em] text-white"
-            >
-              Dashboard
+
+          {/* Desktop Navigation */}
+          <div className="hidden items-center gap-8 text-xs font-semibold uppercase tracking-[0.22em] text-white/85 md:flex">
+            <Link to="/">
+              Home
             </Link>
-          ) : (
-            <Link
-              to="/portal"
-              className="rounded border border-white/40 px-4 py-2 text-[11px] font-semibold tracking-[0.18em] text-white"
-            >
-              Portal Login
+            <Link to="/about">
+              About
             </Link>
-          )}
+            <Link to="/team">
+              Team
+            </Link>
+            <Link to="/contact">
+              Contact
+            </Link>
+            {dashboardRoute ? (
+              <Link
+                to={dashboardRoute}
+                className="rounded border border-white/40 px-4 py-2 text-[11px] font-semibold tracking-[0.18em] text-white hover:bg-white/10"
+              >
+                Dashboard
+              </Link>
+            ) : (
+              <Link
+                to="/portal"
+                className="rounded border border-white/40 px-4 py-2 text-[11px] font-semibold tracking-[0.18em] text-white hover:bg-white/10"
+              >
+                Portal Login
+              </Link>
+            )}
+          </div>
+
+          {/* Mobile Menu Button & Login */}
+          <div className="flex items-center gap-3 md:hidden">
+            {dashboardRoute ? (
+              <Link
+                to={dashboardRoute}
+                className="rounded border border-white/40 px-3 py-1.5 text-[10px] font-semibold tracking-[0.18em] text-white"
+              >
+                Dashboard
+              </Link>
+            ) : (
+              <Link
+                to="/portal"
+                className="rounded border border-white/40 px-3 py-1.5 text-[10px] font-semibold tracking-[0.18em] text-white"
+              >
+                Login
+              </Link>
+            )}
+            <button
+              type="button"
+              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+              className="flex items-center justify-center text-white"
+              aria-label="Toggle menu"
+            >
+              <svg className="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                {mobileMenuOpen ? (
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                ) : (
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+                )}
+              </svg>
+            </button>
+          </div>
         </div>
+
+        {/* Mobile Menu Dropdown */}
+        {mobileMenuOpen && (
+          <div className="border-t border-white/10 bg-text-main md:hidden">
+            <div className="flex flex-col px-4 py-3">
+              <Link
+                to="/"
+                onClick={() => setMobileMenuOpen(false)}
+                className="py-2 text-sm font-semibold uppercase tracking-[0.22em] text-white/80 hover:text-white"
+              >
+                Home
+              </Link>
+              <Link
+                to="/about"
+                onClick={() => setMobileMenuOpen(false)}
+                className="py-2 text-sm font-semibold uppercase tracking-[0.22em] text-white/80 hover:text-white"
+              >
+                About
+              </Link>
+              <Link
+                to="/team"
+                onClick={() => setMobileMenuOpen(false)}
+                className="py-2 text-sm font-semibold uppercase tracking-[0.22em] text-white/80 hover:text-white"
+              >
+                Team
+              </Link>
+              <Link
+                to="/contact"
+                onClick={() => setMobileMenuOpen(false)}
+                className="py-2 text-sm font-semibold uppercase tracking-[0.22em] text-white/80 hover:text-white"
+              >
+                Contact
+              </Link>
+            </div>
+          </div>
+        )}
       </nav>
 
       <main ref={heroRef} className="pt-24">
         <section className="fade-in px-10 pb-24 pt-10 md:flex md:min-h-[70vh] md:items-center">
           <div className="max-w-2xl space-y-6">
             <p className="font-mono text-[11px] uppercase tracking-[0.3em] text-primary">
-              School of Computer Applications — LPU · Established 2026
+              School of Computer Applications — LPU
             </p>
             <div className="h-40 md:h-64 mt-2">
               <h1 className="font-sans font-bold text-4xl leading-tight md:text-6xl md:leading-tight">

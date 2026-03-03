@@ -17,6 +17,7 @@ function StudentDashboard() {
   const [dueDate, setDueDate] = useState("");
   const [priority, setPriority] = useState("medium");
   const [profileOpen, setProfileOpen] = useState(false);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [showUpcomingModal, setShowUpcomingModal] = useState(false);
   const [upcomingTasks, setUpcomingTasks] = useState([]);
   const [calendarMonth, setCalendarMonth] = useState(() => {
@@ -339,30 +340,49 @@ function StudentDashboard() {
         className="cursor-ring fixed z-[9998] h-7 w-7 -translate-x-1/2 -translate-y-1/2 rounded-full border border-green/40"
       />
 
-      <nav className="relative z-40 flex items-center justify-between border-b border-black/70 bg-text-main px-8 py-4">
+      <nav className="relative z-40 flex items-center justify-between border-b border-black/70 bg-text-main px-4 py-3 sm:px-6 sm:py-4 md:px-8">
         <Link to="/" className="flex items-center gap-2">
           <img
             src={logo}
             alt="SCA EMS"
             className="h-8 w-auto"
           />
-          <span className="text-[10px] font-mono uppercase tracking-[0.22em] text-white/70">
+          <span className="hidden text-[10px] font-mono uppercase tracking-[0.22em] text-white/70 sm:inline">
             Student
           </span>
         </Link>
-        <div className="flex items-center gap-6">
+        <div className="flex items-center gap-3 sm:gap-6">
+          {/* Mobile Menu Button */}
+          <button
+            type="button"
+            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+            className="flex items-center justify-center text-white md:hidden"
+            aria-label="Toggle menu"
+          >
+            <svg className="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              {mobileMenuOpen ? (
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+              ) : (
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+              )}
+            </svg>
+          </button>
+
+          {/* Desktop Links */}
           <div className="hidden items-center gap-6 text-[11px] font-semibold uppercase tracking-[0.22em] text-white/80 md:flex">
             <Link to="/about">About</Link>
             <Link to="/team">Team</Link>
             <Link to="/contact">Contact</Link>
           </div>
+
+          {/* Profile Dropdown */}
           <div className="relative">
             <button
               type="button"
               onClick={() => setProfileOpen((v) => !v)}
               className="flex items-center gap-2 rounded-full border border-border-color bg-white px-2 py-1 text-xs"
             >
-              <div className="flex h-8 w-8 overflow-hidden items-center justify-center rounded-full border border-border-color bg-green text-sm font-semibold text-white">
+              <div className="flex h-8 w-8 flex-shrink-0 overflow-hidden items-center justify-center rounded-full border border-border-color bg-green text-sm font-semibold text-white">
                 {photoUrl ? (
                   <img
                     src={photoUrl}
@@ -374,8 +394,8 @@ function StudentDashboard() {
                 )}
               </div>
               <div className="hidden flex-col text-left text-[10px] uppercase tracking-[0.18em] text-text-muted sm:flex">
-                <span className="truncate">{displayName}</span>
-                <span className="truncate">
+                <span className="truncate max-w-[120px]">{displayName}</span>
+                <span className="truncate max-w-[120px]">
                   {currentIdentifier || "Student"}
                 </span>
               </div>
@@ -421,6 +441,35 @@ function StudentDashboard() {
             )}
           </div>
         </div>
+
+        {/* Mobile Menu */}
+        {mobileMenuOpen && (
+          <div className="absolute left-0 right-0 top-full z-40 border-b border-black/70 bg-text-main md:hidden">
+            <div className="flex flex-col px-4 py-3">
+              <Link
+                to="/about"
+                onClick={() => setMobileMenuOpen(false)}
+                className="py-2 text-sm font-semibold uppercase tracking-[0.22em] text-white/80 hover:text-white"
+              >
+                About
+              </Link>
+              <Link
+                to="/team"
+                onClick={() => setMobileMenuOpen(false)}
+                className="py-2 text-sm font-semibold uppercase tracking-[0.22em] text-white/80 hover:text-white"
+              >
+                Team
+              </Link>
+              <Link
+                to="/contact"
+                onClick={() => setMobileMenuOpen(false)}
+                className="py-2 text-sm font-semibold uppercase tracking-[0.22em] text-white/80 hover:text-white"
+              >
+                Contact
+              </Link>
+            </div>
+          </div>
+        )}
       </nav>
 
       {showUpcomingModal && upcomingTasks.length > 0 && (
@@ -473,7 +522,7 @@ function StudentDashboard() {
         </div>
       )}
 
-      <main className="px-8 py-6">
+      <main className="px-4 py-4 sm:px-6 sm:py-6 md:px-8 md:py-6">
         <section className="sd-fade mb-6 flex flex-col gap-4 rounded border border-border-color bg-white p-4 md:flex-row md:items-center md:justify-between">
           <div>
             <div className="font-mono text-[10px] uppercase tracking-[0.25em] text-text-muted">
@@ -483,20 +532,20 @@ function StudentDashboard() {
               Tasks for current SCA events
             </div>
           </div>
-          <div className="flex gap-6">
-            <div className="text-right">
+          <div className="flex flex-wrap gap-4 md:gap-6">
+            <div className="text-left md:text-right">
               <div className="font-sans font-bold text-2xl">{summary.total}</div>
               <div className="font-mono text-[10px] uppercase tracking-[0.2em] text-text-muted">
                 Total Tasks
               </div>
             </div>
-            <div className="text-right">
+            <div className="text-left md:text-right">
               <div className="font-sans font-bold text-2xl">{summary.completed}</div>
               <div className="font-mono text-[10px] uppercase tracking-[0.2em] text-text-muted">
                 Completed
               </div>
             </div>
-            <div className="text-right">
+            <div className="text-left md:text-right">
               <div className="font-sans font-bold text-2xl">
                 {eventSummary.active}
               </div>
@@ -604,73 +653,75 @@ function StudentDashboard() {
                 return (
                   <div
                     key={t._id}
-                    className={`sd-fade flex items-center gap-4 px-4 py-3 ${
+                    className={`sd-fade flex flex-col gap-3 px-4 py-3 sm:flex-row sm:items-center sm:gap-4 ${
                       t.isPlaceholder ? "bg-blue-50/30" : ""
                     }`}
                   >
-                    <button
-                      type="button"
-                      onClick={() => {
-                        if (canToggle && !t.isPlaceholder) {
-                          toggleTask(t.eventId, t.todoId, !!t.completed);
-                        }
-                      }}
-                      disabled={!canToggle || t.isPlaceholder}
-                      className={`flex h-5 w-5 items-center justify-center rounded border-2 ${
-                        t.isPlaceholder
-                          ? "border-blue-300 bg-blue-100 opacity-50"
-                          : t.completed
-                          ? "border-green bg-green"
-                          : canToggle
-                          ? "border-border-color hover:border-green"
-                          : "border-border-color opacity-40"
-                      }`}
-                    >
-                      {t.completed && !t.isPlaceholder && (
-                        <span className="text-[11px] text-white">✓</span>
-                      )}
-                      {t.isPlaceholder && (
-                        <span className="text-[11px] text-blue-500">⏳</span>
-                      )}
-                    </button>
-                    <div className="flex-1">
-                      <div
-                        className={`text-sm font-medium ${
-                          t.completed ? "line-through text-text-muted" : ""
-                        } ${t.isPlaceholder ? "italic text-blue-700" : ""}`}
+                    <div className="flex items-center gap-4">
+                      <button
+                        type="button"
+                        onClick={() => {
+                          if (canToggle && !t.isPlaceholder) {
+                            toggleTask(t.eventId, t.todoId, !!t.completed);
+                          }
+                        }}
+                        disabled={!canToggle || t.isPlaceholder}
+                        className={`flex h-5 w-5 flex-shrink-0 items-center justify-center rounded border-2 ${
+                          t.isPlaceholder
+                            ? "border-blue-300 bg-blue-100 opacity-50"
+                            : t.completed
+                            ? "border-green bg-green"
+                            : canToggle
+                            ? "border-border-color hover:border-green"
+                            : "border-border-color opacity-40"
+                        }`}
                       >
-                        {t.title}
-                      </div>
-                      <div className="mt-1 flex flex-wrap gap-3 text-[11px] text-text-muted">
-                        <span className="font-mono">{t.eventName}</span>
-                        {dueInfo && (
-                          <span
-                            className={`font-mono ${
-                              dueInfo.urgent ? "text-red-600" : ""
-                            }`}
-                          >
-                            {dueInfo.text}
-                          </span>
+                        {t.completed && !t.isPlaceholder && (
+                          <span className="text-[11px] text-white">✓</span>
                         )}
                         {t.isPlaceholder && (
-                          <span className="font-mono text-blue-600">
-                            Faculty will add tasks soon
-                          </span>
+                          <span className="text-[11px] text-blue-500">⏳</span>
                         )}
-                        {t.assignedTo && !t.isPlaceholder && (
-                          <span className="font-mono">
-                            Assigned to: {t.assignedTo}
-                          </span>
-                        )}
-                        {!canToggle && !t.isPlaceholder && (
-                          <span className="font-mono text-red-600">
-                            Not assigned to you
-                          </span>
-                        )}
+                      </button>
+                      <div className="flex-1 min-w-0">
+                        <div
+                          className={`text-sm font-medium break-words ${
+                            t.completed ? "line-through text-text-muted" : ""
+                          } ${t.isPlaceholder ? "italic text-blue-700" : ""}`}
+                        >
+                          {t.title}
+                        </div>
+                        <div className="mt-1 flex flex-wrap gap-2 text-[11px] text-text-muted">
+                          <span className="font-mono">{t.eventName}</span>
+                          {dueInfo && (
+                            <span
+                              className={`font-mono ${
+                                dueInfo.urgent ? "text-red-600" : ""
+                              }`}
+                            >
+                              {dueInfo.text}
+                            </span>
+                          )}
+                          {t.isPlaceholder && (
+                            <span className="font-mono text-blue-600">
+                              Faculty will add tasks soon
+                            </span>
+                          )}
+                          {t.assignedTo && !t.isPlaceholder && (
+                            <span className="font-mono break-all">
+                              Assigned to: {t.assignedTo}
+                            </span>
+                          )}
+                          {!canToggle && !t.isPlaceholder && (
+                            <span className="font-mono text-red-600">
+                              Not assigned to you
+                            </span>
+                          )}
+                        </div>
                       </div>
                     </div>
                     <span
-                      className={`rounded px-2 py-1 text-[10px] font-mono uppercase ${
+                      className={`self-start rounded px-2 py-1 text-[10px] font-mono uppercase sm:self-center ${
                         t.isPlaceholder
                           ? "bg-blue-100 text-blue-700"
                           : t.priority === "high"

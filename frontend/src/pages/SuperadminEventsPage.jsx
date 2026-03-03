@@ -502,7 +502,7 @@ function SuperadminEventsPage() {
                           ([todoId, todo]) => (
                             <div
                               key={todoId}
-                              className={`flex w-full items-center justify-between rounded border px-3 py-2 text-[11px] ${
+                              className={`flex flex-col gap-2 rounded border px-3 py-2 text-[11px] sm:flex-row sm:items-center sm:justify-between ${
                                 todo.completed
                                   ? "border-green bg-green/5 line-through text-text-muted"
                                   : "border-border-color bg-background"
@@ -540,24 +540,24 @@ function SuperadminEventsPage() {
                                 }}
                                 className="flex flex-1 items-center gap-2 text-left"
                               >
-                                <span>{todo.title}</span>
+                                <span className="break-words">{todo.title}</span>
                                 {todo.audience === "students" && (
-                                  <span className="rounded bg-green/10 px-2 py-[1px] text-[9px] font-mono uppercase tracking-[0.18em] text-green-700">
+                                  <span className="flex-shrink-0 rounded bg-green/10 px-2 py-[1px] text-[9px] font-mono uppercase tracking-[0.18em] text-green-700">
                                     Students
                                   </span>
                                 )}
                                 {todo.audience === "faculty" && (
-                                  <span className="rounded bg-ink/5 px-2 py-[1px] text-[9px] font-mono uppercase tracking-[0.18em] text-text-main">
+                                  <span className="flex-shrink-0 rounded bg-ink/5 px-2 py-[1px] text-[9px] font-mono uppercase tracking-[0.18em] text-text-main">
                                     Faculty
                                   </span>
                                 )}
                                 {todo.audience === "all" && (
-                                  <span className="rounded bg-gold/10 px-2 py-[1px] text-[9px] font-mono uppercase tracking-[0.18em] text-primary">
+                                  <span className="flex-shrink-0 rounded bg-gold/10 px-2 py-[1px] text-[9px] font-mono uppercase tracking-[0.18em] text-primary">
                                     All
                                   </span>
                                 )}
                               </button>
-                              <div className="flex items-center gap-2">
+                              <div className="flex items-center gap-2 self-start sm:self-center">
                                 {todo.important && (
                                   <span className="font-mono text-[9px] uppercase tracking-[0.18em] text-red-600">
                                     Important

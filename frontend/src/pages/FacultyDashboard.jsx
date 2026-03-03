@@ -34,6 +34,7 @@ function FacultyDashboard() {
   const [studentsDirectory, setStudentsDirectory] = useState([]);
   const [showStudentSuggestions, setShowStudentSuggestions] = useState(false);
   const [profileOpen, setProfileOpen] = useState(false);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [editingEventId, setEditingEventId] = useState(null);
   const [editEventForm, setEditEventForm] = useState(null);
 
@@ -264,30 +265,49 @@ function FacultyDashboard() {
         className="cursor-ring fixed z-[9998] h-8 w-8 -translate-x-1/2 -translate-y-1/2 rounded-full border border-blue/40"
       />
 
-      <nav className="relative z-40 flex items-center justify-between border-b border-black/70 bg-text-main px-8 py-4">
+      <nav className="relative z-40 flex items-center justify-between border-b border-black/70 bg-text-main px-4 py-3 sm:px-6 sm:py-4 md:px-8">
         <Link to="/" className="flex items-center gap-2">
           <img
             src={logo}
             alt="SCA EMS"
             className="h-8 w-auto"
           />
-          <span className="text-[10px] font-mono uppercase tracking-[0.22em] text-white/70">
+          <span className="hidden text-[10px] font-mono uppercase tracking-[0.22em] text-white/70 sm:inline">
             Faculty
           </span>
         </Link>
-        <div className="flex items-center gap-6">
+        <div className="flex items-center gap-3 sm:gap-6">
+          {/* Mobile Menu Button */}
+          <button
+            type="button"
+            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+            className="flex items-center justify-center text-white md:hidden"
+            aria-label="Toggle menu"
+          >
+            <svg className="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              {mobileMenuOpen ? (
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+              ) : (
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+              )}
+            </svg>
+          </button>
+
+          {/* Desktop Links */}
           <div className="hidden items-center gap-6 text-[11px] font-semibold uppercase tracking-[0.22em] text-white/80 md:flex">
             <Link to="/about">About</Link>
             <Link to="/team">Team</Link>
             <Link to="/contact">Contact</Link>
           </div>
+
+          {/* Profile Dropdown */}
           <div className="relative">
             <button
               type="button"
               onClick={() => setProfileOpen((v) => !v)}
               className="flex items-center gap-2 rounded-full border border-border-color bg-white px-2 py-1 text-xs"
             >
-              <div className="flex h-8 w-8 overflow-hidden items-center justify-center rounded-full border border-border-color bg-blue text-sm font-semibold text-white">
+              <div className="flex h-8 w-8 flex-shrink-0 overflow-hidden items-center justify-center rounded-full border border-border-color bg-blue text-sm font-semibold text-white">
                 {photoUrl ? (
                   <img
                     src={photoUrl}
@@ -299,8 +319,8 @@ function FacultyDashboard() {
                 )}
               </div>
               <div className="hidden flex-col text-left text-[10px] uppercase tracking-[0.18em] text-text-muted sm:flex">
-                <span className="truncate">{displayName}</span>
-                <span className="truncate">
+                <span className="truncate max-w-[120px]">{displayName}</span>
+                <span className="truncate max-w-[120px]">
                   {currentIdentifier || "Faculty"}
                 </span>
               </div>
@@ -361,6 +381,35 @@ function FacultyDashboard() {
             )}
           </div>
         </div>
+
+        {/* Mobile Menu */}
+        {mobileMenuOpen && (
+          <div className="absolute left-0 right-0 top-full z-40 border-b border-black/70 bg-text-main md:hidden">
+            <div className="flex flex-col px-4 py-3">
+              <Link
+                to="/about"
+                onClick={() => setMobileMenuOpen(false)}
+                className="py-2 text-sm font-semibold uppercase tracking-[0.22em] text-white/80 hover:text-white"
+              >
+                About
+              </Link>
+              <Link
+                to="/team"
+                onClick={() => setMobileMenuOpen(false)}
+                className="py-2 text-sm font-semibold uppercase tracking-[0.22em] text-white/80 hover:text-white"
+              >
+                Team
+              </Link>
+              <Link
+                to="/contact"
+                onClick={() => setMobileMenuOpen(false)}
+                className="py-2 text-sm font-semibold uppercase tracking-[0.22em] text-white/80 hover:text-white"
+              >
+                Contact
+              </Link>
+            </div>
+          </div>
+        )}
       </nav>
 
       {showNotifications && eventNotifications.length > 0 && (
@@ -415,7 +464,7 @@ function FacultyDashboard() {
         </div>
       )}
 
-      <main className="px-8 py-6">
+      <main className="px-4 py-4 sm:px-6 sm:py-6 md:px-8 md:py-6">
         <section className="fd-fade mb-6 flex flex-col gap-4 rounded border border-border-color bg-white p-4 md:flex-row md:items-center md:justify-between">
           <div>
             <div className="font-mono text-[10px] uppercase tracking-[0.25em] text-text-muted">
@@ -425,14 +474,14 @@ function FacultyDashboard() {
               Tasks for SCA events you own
             </div>
           </div>
-          <div className="flex gap-6">
-            <div className="text-right">
+          <div className="flex flex-wrap gap-4 md:gap-6">
+            <div className="text-left md:text-right">
               <div className="font-sans font-bold text-2xl">{events.length}</div>
               <div className="font-mono text-[10px] uppercase tracking-[0.2em] text-text-muted">
                 Events Assigned
               </div>
             </div>
-            <div className="text-right">
+            <div className="text-left md:text-right">
               <div className="font-sans font-bold text-2xl">{upcomingEventsCount}</div>
               <div className="font-mono text-[10px] uppercase tracking-[0.2em] text-text-muted">
                 Upcoming
@@ -951,7 +1000,7 @@ function FacultyDashboard() {
                           } catch {
                           }
                         }}
-                        className="mb-3 grid gap-2 md:grid-cols-[2fr,auto]"
+                        className="mb-3 flex flex-col gap-2"
                       >
                         <input
                           value={newTodoTitle}
@@ -959,7 +1008,7 @@ function FacultyDashboard() {
                           className="rounded border border-border-color px-3 py-2 text-sm"
                           placeholder="Add a key preparation task"
                         />
-                        <div className="flex items-center gap-2">
+                        <div className="flex flex-wrap items-center gap-2">
                           <select
                             value={newTodoAudience}
                             onChange={(e) => setNewTodoAudience(e.target.value)}
@@ -993,7 +1042,7 @@ function FacultyDashboard() {
                             ([todoId, todo]) => (
                               <div
                                 key={todoId}
-                                className={`flex w-full items-center justify-between rounded border px-3 py-2 text-[11px] ${todo.completed
+                                className={`flex flex-col gap-2 rounded border px-3 py-2 text-[11px] sm:flex-row sm:items-center sm:justify-between ${todo.completed
                                   ? "border-green bg-green/5 line-through text-text-muted"
                                   : "border-border-color bg-background"
                                   }`}
@@ -1030,24 +1079,24 @@ function FacultyDashboard() {
                                   }}
                                   className="flex flex-1 items-center gap-2 text-left"
                                 >
-                                  <span>{todo.title}</span>
+                                  <span className="break-words">{todo.title}</span>
                                   {todo.audience === "students" && (
-                                    <span className="rounded bg-green/10 px-2 py-[1px] text-[9px] font-mono uppercase tracking-[0.18em] text-green-700">
+                                    <span className="flex-shrink-0 rounded bg-green/10 px-2 py-[1px] text-[9px] font-mono uppercase tracking-[0.18em] text-green-700">
                                       Students
                                     </span>
                                   )}
                                   {todo.audience === "faculty" && (
-                                    <span className="rounded bg-ink/5 px-2 py-[1px] text-[9px] font-mono uppercase tracking-[0.18em] text-text-main">
+                                    <span className="flex-shrink-0 rounded bg-ink/5 px-2 py-[1px] text-[9px] font-mono uppercase tracking-[0.18em] text-text-main">
                                       Faculty
                                     </span>
                                   )}
                                   {todo.audience === "all" && (
-                                    <span className="rounded bg-gold/10 px-2 py-[1px] text-[9px] font-mono uppercase tracking-[0.18em] text-primary">
+                                    <span className="flex-shrink-0 rounded bg-gold/10 px-2 py-[1px] text-[9px] font-mono uppercase tracking-[0.18em] text-primary">
                                       All
                                     </span>
                                   )}
                                 </button>
-                                <div className="flex items-center gap-2">
+                                <div className="flex items-center gap-2 self-start sm:self-center">
                                   {todo.important && (
                                     <span className="font-mono text-[9px] uppercase tracking-[0.18em] text-red-600">
                                       Important
@@ -1141,7 +1190,7 @@ function FacultyDashboard() {
                               alert("Unable to reach server while assigning student.");
                             }
                           }}
-                          className="mb-3 grid gap-2 md:grid-cols-[1.5fr,1.5fr,auto]"
+                          className="mb-3 flex flex-col gap-2"
                         >
                           <div className="relative">
                             <input
